@@ -1,0 +1,32 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <rect x="86" y="112" width="340" height="288" rx="50" fill="url(#card)" stroke="rgba(255,255,255,0.22)" stroke-width="6"/>
+  <path d="M116 161.5C116 151.282 124.282 143 134.5 143H377.5C387.718 143 396 151.282 396 161.5V165.5L256 266.5L116 165.5V161.5Z" fill="url(#flap)"/>
+  <path d="M116 194L245.178 286.747C251.664 291.404 260.336 291.404 266.822 286.747L396 194V350.5C396 360.718 387.718 369 377.5 369H134.5C124.282 369 116 360.718 116 350.5V194Z" fill="url(#body)"/>
+  <circle cx="186" cy="336" r="40" fill="url(#bubble)"/>
+  <path d="M168.2 352L182.08 316.4H189.04L202.92 352H196.08L192.84 343.16H178.24L174.96 352H168.2ZM179.96 338H191.08L185.56 323.08L179.96 338Z" fill="#E8FBFF"/>
+  <path d="M207.2 352V316.4H220.52C224.28 316.4 227.307 317.44 229.6 319.52C231.92 321.6 233.08 324.44 233.08 328.04C233.08 331.667 231.92 334.52 229.6 336.6C227.307 338.68 224.28 339.72 220.52 339.72H213.72V352H207.2ZM213.72 334.08H219.92C221.893 334.08 223.44 333.56 224.56 332.52C225.68 331.453 226.24 329.96 226.24 328.04C226.24 326.12 225.68 324.64 224.56 323.6C223.44 322.533 221.893 322 219.92 322H213.72V334.08Z" fill="#E8FBFF"/>
+  <defs>
+    <linearGradient id="bg" x1="54" y1="36" x2="470" y2="476" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B2742"/>
+      <stop offset="0.52" stop-color="#113D63"/>
+      <stop offset="1" stop-color="#1A5C6E"/>
+    </linearGradient>
+    <linearGradient id="card" x1="111" y1="122" x2="410" y2="399" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="flap" x1="132" y1="145" x2="377" y2="270" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5ED6E8"/>
+      <stop offset="1" stop-color="#7EE7B7"/>
+    </linearGradient>
+    <linearGradient id="body" x1="137" y1="198" x2="394" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#184B6A"/>
+      <stop offset="1" stop-color="#0D324B"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="153" y1="300" x2="230" y2="365" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57D9F7"/>
+      <stop offset="1" stop-color="#2DA7CC"/>
+    </linearGradient>
+  </defs>
+</svg>

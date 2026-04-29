@@ -1,46 +1,70 @@
-# Getting Started with Create React App
+# AI Mail Agent
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Full-stack email assistant with:
+- Professional auth pages (login, register, forgot password, reset password)
+- JWT-based session auth
+- MongoDB-backed users and email threads
+- Protected mailbox APIs
+- Branded AI Mail Agent logo
 
-## Available Scripts
+## Tech Stack
 
-In the project directory, you can run:
+- Frontend: React + TypeScript + Material UI
+- Backend: Node.js + Express + MongoDB (Mongoose)
+- Auth: bcrypt password hashing + JWT access token + reset token flow
 
-### `yarn start`
+## Quick Start
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. Install dependencies
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+yarn install
+```
 
-### `yarn test`
+2. Configure environment
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cp .env.example .env
+```
 
-### `yarn build`
+Update `.env` values:
+- `MONGODB_URI` for your MongoDB instance
+- `JWT_SECRET` with a strong random secret
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Run frontend + backend together
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+yarn dev
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Frontend runs on `http://localhost:3000` and backend runs on `http://localhost:5000`.
 
-### `yarn eject`
+## Scripts
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- `yarn dev` runs frontend + backend together
+- `yarn start` runs only frontend
+- `yarn server:dev` runs backend with nodemon
+- `yarn server` runs backend with node
+- `yarn test` runs frontend tests
+- `yarn build` builds frontend
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## API Overview
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Auth routes:
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+- `GET /api/auth/me`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Email routes (protected with `Authorization: Bearer <token>`):
+- `GET /api/emails`
+- `POST /api/emails/add`
+- `GET /api/emails/thread/:threadId`
+- `POST /api/emails/ai-reply`
+- `GET /api/emails/stats`
 
-## Learn More
+## Notes
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Forgot-password currently returns `resetToken` and `resetUrl` in API response so local development works without SMTP/email provider setup.
+- Logo asset is at `src/assets/ai-mail-agent-logo.svg`.
