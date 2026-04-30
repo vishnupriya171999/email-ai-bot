@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { STORAGE_KEYS } from "../config/locator";
+import { clearSession, setSession, setUser } from "../store/authSlice";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   AuthSession,
-  AuthUser,
   LoginPayload,
   RegisterPayload,
   ResetPasswordPayload,
@@ -12,24 +13,6 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "../services/authService";
-
-function loadStoredUser() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.AUTH_USER);
-
-    if (!raw) {
-      return null;
-    }
-
-    return JSON.parse(raw) as AuthUser;
-  } catch {
-    return null;
-  }
-}
 
 function persistSession(session: AuthSession) {
   window.localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, session.token);
@@ -42,15 +25,23 @@ function clearStoredSession() {
 }
 
 export function useAuthSession() {
-  const [user, setUser] = useState<AuthUser | null>(() => loadStoredUser());
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+  const token = useAppSelector((state) => state.auth.token);
   const [bootstrapping, setBootstrapping] = useState(true);
 
   useEffect(() => {
-    const token = window.localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    const storedToken = window.localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    const activeToken = storedToken || token;
 
-    if (!token) {
+    if (!activeToken) {
+      dispatch(clearSession());
       setBootstrapping(false);
       return;
+    }
+
+    if (!storedToken) {
+      window.localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, activeToken);
     }
 
     let active = true;
@@ -60,13 +51,13 @@ export function useAuthSession() {
         const currentUser = await fetchCurrentUser();
 
         if (active) {
-          setUser(currentUser);
           window.localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(currentUser));
+          dispatch(setUser(currentUser));
         }
       } catch {
         if (active) {
           clearStoredSession();
-          setUser(null);
+          dispatch(clearSession());
         }
       } finally {
         if (active) {
@@ -78,35 +69,35 @@ export function useAuthSession() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [dispatch, token]);
 
   const login = useCallback(async (payload: LoginPayload) => {
     const session = await loginUser(payload);
     persistSession(session);
-    setUser(session.user);
+    dispatch(setSession(session));
     return session.user;
-  }, []);
+  }, [dispatch]);
 
   const register = useCallback(async (payload: RegisterPayload) => {
     const session = await registerUser(payload);
     persistSession(session);
-    setUser(session.user);
+    dispatch(setSession(session));
     return session.user;
-  }, []);
+  }, [dispatch]);
 
   const forgotPassword = useCallback(async (email: string) => requestPasswordReset(email), []);
 
   const completePasswordReset = useCallback(async (payload: ResetPasswordPayload) => {
     const session = await resetPassword(payload);
     persistSession(session);
-    setUser(session.user);
+    dispatch(setSession(session));
     return session.user;
-  }, []);
+  }, [dispatch]);
 
   const logout = useCallback(() => {
     clearStoredSession();
-    setUser(null);
-  }, []);
+    dispatch(clearSession());
+  }, [dispatch]);
 
   return {
     user,

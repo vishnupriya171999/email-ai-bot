@@ -12,6 +12,7 @@ import {
   ListItemButton,
   ListItemText,
   Paper,
+  Popover,
   Skeleton,
   Stack,
   TextField,
@@ -95,6 +96,18 @@ function BrandMark({
       </Box>
     </Stack>
   );
+}
+
+function getInitials(name: string, email: string) {
+  const source = name.trim() || email.trim();
+
+  if (!source) {
+    return "U";
+  }
+
+  const words = source.split(/[.\s@_-]+/).filter(Boolean);
+  const initials = words.slice(0, 2).map((word) => word[0]?.toUpperCase()).join("");
+  return initials || "U";
 }
 
 export const panelStyle = {
@@ -240,19 +253,72 @@ export function AgentHeader({
   stats,
   loading,
   refreshing,
+  accountName,
+  defaultUserEmail,
   onOpenNav,
   onRefresh,
+  onLogout,
 }: {
   isMobile: boolean;
   view: ViewKey;
   stats: AgentStats;
   loading: boolean;
   refreshing: boolean;
+  accountName: string;
+  defaultUserEmail: string;
   onOpenNav: () => void;
   onRefresh: () => void;
+  onLogout: () => void;
 }) {
   const title =
     view === "home" ? "Home" : view === "inbox" ? "Inbox" : view === "knowledge" ? "Knowledge Base" : "Analytics";
+  const initials = getInitials(accountName, defaultUserEmail);
+  const [profileAnchor, setProfileAnchor] = useState<HTMLElement | null>(null);
+  const profileOpen = Boolean(profileAnchor);
+
+  const openProfile = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileAnchor(event.currentTarget);
+  };
+
+  const closeProfile = () => {
+    setProfileAnchor(null);
+  };
+
+  const handleLogoutClick = () => {
+    closeProfile();
+    onLogout();
+  };
+
+  const profileButton = (
+    <IconButton
+      onClick={openProfile}
+      aria-label="Open profile"
+      aria-haspopup="dialog"
+      aria-expanded={profileOpen ? "true" : undefined}
+      sx={{
+        p: 0.35,
+        borderRadius: 1,
+        border: "1px solid rgba(94,231,255,0.18)",
+        bgcolor: "rgba(94,231,255,0.08)",
+        "&:hover": {
+          bgcolor: "rgba(94,231,255,0.14)",
+        },
+      }}
+    >
+      <Avatar
+        sx={{
+          width: { xs: 34, md: 38 },
+          height: { xs: 34, md: 38 },
+          fontSize: { xs: "0.78rem", md: "0.85rem" },
+          bgcolor: "rgba(94,231,255,0.14)",
+          color: "primary.main",
+          border: "1px solid rgba(94,231,255,0.22)",
+        }}
+      >
+        {initials}
+      </Avatar>
+    </IconButton>
+  );
 
   return (
     <Stack spacing={1.25} mb={1.5}>
@@ -273,12 +339,7 @@ export function AgentHeader({
             <BrandMark compact />
           </Stack>
 
-          <Chip
-            size="small"
-            icon={<InboxRoundedIcon />}
-            label={`${stats.inboundCount} inbound`}
-            sx={{ bgcolor: "rgba(94,231,255,0.12)", color: "text.primary" }}
-          />
+          {profileButton}
         </Stack>
       ) : (
         <Box
@@ -318,9 +379,68 @@ export function AgentHeader({
             >
               Sync
             </Button>
+            {profileButton}
           </Stack>
         </Box>
       )}
+
+      <Popover
+        open={profileOpen}
+        anchorEl={profileAnchor}
+        onClose={closeProfile}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            width: 280,
+            maxWidth: "calc(100vw - 24px)",
+            p: 1.5,
+            borderRadius: 1,
+            border: "1px solid rgba(94,231,255,0.16)",
+            bgcolor: "rgba(7, 16, 30, 0.98)",
+            backgroundImage: "linear-gradient(180deg, rgba(8, 18, 32, 0.98), rgba(4, 10, 18, 0.98))",
+            boxShadow: "0 22px 70px rgba(0,0,0,0.36)",
+          },
+        }}
+      >
+        <Stack spacing={1.5}>
+          <Stack direction="row" spacing={1.25} alignItems="center" minWidth={0}>
+            <Avatar
+              sx={{
+                width: 44,
+                height: 44,
+                bgcolor: "rgba(94,231,255,0.14)",
+                color: "primary.main",
+                border: "1px solid rgba(94,231,255,0.22)",
+              }}
+            >
+              {initials}
+            </Avatar>
+            <Box minWidth={0}>
+              <Typography variant="subtitle1" fontWeight={900} noWrap>
+                {accountName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {defaultUserEmail}
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Divider sx={{ borderColor: "rgba(94,231,255,0.12)" }} />
+
+          <Button
+            fullWidth
+            variant="outlined"
+            color="inherit"
+            startIcon={<LogoutRoundedIcon />}
+            onClick={handleLogoutClick}
+            sx={{ justifyContent: "flex-start", borderRadius: 1 }}
+          >
+            Log out
+          </Button>
+        </Stack>
+      </Popover>
     </Stack>
   );
 }

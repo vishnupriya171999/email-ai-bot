@@ -35,13 +35,14 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const { identifier, password } = req.body;
+  const { email, identifier, password } = req.body;
+  const loginIdentifier = email || identifier;
 
-  if (!identifier || !password) {
-    return res.status(400).json({ message: "Email/username and password are required." });
+  if (!loginIdentifier || !password) {
+    return res.status(400).json({ message: "Email and password are required." });
   }
 
-  const normalizedIdentifier = String(identifier).trim().toLowerCase();
+  const normalizedIdentifier = String(loginIdentifier).trim().toLowerCase();
   const user = await User.findOne({
     $or: [{ email: normalizedIdentifier }, { usernameLower: normalizedIdentifier }],
   });

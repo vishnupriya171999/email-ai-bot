@@ -325,7 +325,7 @@ function App() {
       return "AI Mail Agent | Reset Password";
     }
 
-    return "AI Mail Agent | Login";
+    return "AI Mail Agent | Connect Mailbox";
   }, [activeAuthMode]);
 
   useEffect(() => {
@@ -390,17 +390,17 @@ function App() {
   }, [bootstrapping, isAuthenticated, navigateTo, navigateToAuth, route.kind]);
 
   const handleLogin = useCallback(
-    async ({ identifier, password }: { identifier: string; password: string }) => {
+    async ({ email, password }: { email: string; password: string }) => {
       setAuthBusy(true);
       setAuthError(null);
       setAuthNotice(null);
 
       try {
-        await login({ identifier, password });
-        setAuthNotice("Signed in successfully.");
+        await login({ email, password });
+        setAuthNotice("Mailbox connected successfully.");
         navigateTo("home", null, true);
       } catch (error) {
-        setAuthError(getServiceErrorMessage(error, "Unable to sign in."));
+        setAuthError(getServiceErrorMessage(error, "Unable to connect mailbox."));
       } finally {
         setAuthBusy(false);
       }
@@ -668,8 +668,11 @@ function App() {
                 stats={stats}
                 loading={loading}
                 refreshing={refreshing}
+                accountName={user?.username || "Authenticated user"}
+                defaultUserEmail={user?.email || DEFAULT_USER_EMAIL}
                 onOpenNav={() => setMobileNavOpen(true)}
                 onRefresh={() => void loadMailbox({ showSpinner: false })}
+                onLogout={handleLogout}
               />
 
               {statusMessage ? (

@@ -31,7 +31,7 @@ type Props = {
   error: string | null;
   notice: string | null;
   forgotPasswordResult: PasswordResetRequestResponse | null;
-  onLogin: (values: { identifier: string; password: string }) => Promise<void>;
+  onLogin: (values: { email: string; password: string }) => Promise<void>;
   onRegister: (values: { username: string; email: string; password: string }) => Promise<void>;
   onForgotPassword: (email: string) => Promise<void>;
   onResetPassword: (values: { token: string; password: string }) => Promise<void>;
@@ -77,10 +77,10 @@ function getModeCopy(mode: AuthMode) {
   }
 
   return {
-    badge: "Welcome back",
-    title: "Sign in to your AI mail workspace",
-    description: "Use your username or email with your password to access the protected mailbox dashboard.",
-    primaryAction: "Sign in",
+    badge: "Connect mailbox",
+    title: "Connect your AI reply mailbox",
+    description: "Use a Gmail or Yahoo address with an app password. The backend verifies IMAP before linking it.",
+    primaryAction: "Connect mailbox",
   };
 }
 
@@ -121,11 +121,13 @@ export function AuthPage({
 
     if (mode === "login") {
       if (!identifier.trim()) {
-        nextErrors.identifier = "Enter your email or username.";
+        nextErrors.identifier = "Enter your email address.";
+      } else if (!/\S+@\S+\.\S+/.test(identifier.trim())) {
+        nextErrors.identifier = "Enter a valid email address.";
       }
 
       if (!password.trim()) {
-        nextErrors.password = "Enter your password.";
+        nextErrors.password = "Enter your app password.";
       }
     }
 
@@ -186,7 +188,7 @@ export function AuthPage({
 
     if (mode === "login") {
       await onLogin({
-        identifier: identifier.trim(),
+        email: identifier.trim().toLowerCase(),
         password,
       });
       return;
@@ -217,28 +219,50 @@ export function AuthPage({
   return (
     <Box
       sx={{
-        minHeight: "100dvh",
+        minHeight: "100svh",
         display: "grid",
-        placeItems: "center",
-        p: { xs: 2, md: 3 },
+        alignItems: { xs: "start", lg: "center" },
+        justifyItems: "center",
+        p: { xs: 1.5, sm: 2.5, md: 3 },
+        pb: { xs: "max(24px, env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
         background:
           "radial-gradient(circle at 10% 15%, rgba(94,231,255,0.18), transparent 24%), radial-gradient(circle at 88% 10%, rgba(139,92,246,0.16), transparent 20%), radial-gradient(circle at 50% 100%, rgba(34,197,94,0.14), transparent 32%), linear-gradient(180deg, #020816 0%, #071322 45%, #020816 100%)",
+        "@media (min-width: 481px) and (max-width: 1024px)": {
+          alignItems: "start",
+          p: 3,
+          pb: "max(32px, env(safe-area-inset-bottom))",
+        },
       }}
     >
       <Box
         sx={{
           width: "100%",
-          maxWidth: 1180,
+          maxWidth: { xs: 520, md: 760, lg: 1180 },
           display: "grid",
           gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.05fr) minmax(420px, 0.95fr)" },
-          gap: 2,
+          gap: { xs: 1.5, md: 2 },
           alignItems: "stretch",
+          "@media (min-width: 481px) and (max-width: 767px)": {
+            maxWidth: 620,
+            gap: 2,
+          },
+          "@media (min-width: 768px) and (max-width: 899px)": {
+            maxWidth: 720,
+            gap: 2.25,
+          },
+          "@media (min-width: 900px) and (max-width: 1024px)": {
+            maxWidth: 980,
+            gridTemplateColumns: "minmax(0, 0.92fr) minmax(360px, 1.08fr)",
+            gap: 2,
+          },
         }}
       >
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 3, md: 4 },
+            order: { xs: 2, lg: 1 },
+            p: { xs: 2.25, sm: 3, md: 4 },
             borderRadius: 1,
             border: "1px solid rgba(94,231,255,0.16)",
             background:
@@ -246,9 +270,16 @@ export function AuthPage({
             boxShadow: "0 30px 90px rgba(0,0,0,0.34)",
             position: "relative",
             overflow: "hidden",
+            "@media (min-width: 481px) and (max-width: 899px)": {
+              p: 3,
+            },
+            "@media (min-width: 900px) and (max-width: 1024px)": {
+              order: 1,
+              p: 3,
+            },
           }}
         >
-          <Stack spacing={3} sx={{ height: "100%", position: "relative", zIndex: 1 }}>
+          <Stack spacing={{ xs: 2, md: 3 }} sx={{ height: "100%", position: "relative", zIndex: 1 }}>
             <Box>
               <Chip
                 label="AI Mail Agent"
@@ -265,8 +296,8 @@ export function AuthPage({
                   src={logo}
                   alt="AI Mail Agent"
                   sx={{
-                    width: { xs: 46, md: 56 },
-                    height: { xs: 46, md: 56 },
+                    width: { xs: 42, sm: 48, md: 56 },
+                    height: { xs: 42, sm: 48, md: 56 },
                     borderRadius: 1,
                     border: "1px solid rgba(94,231,255,0.25)",
                     boxShadow: "0 10px 30px rgba(94,231,255,0.16)",
@@ -276,25 +307,37 @@ export function AuthPage({
                   AI Mail Agent
                 </Typography>
               </Stack>
-              <Typography variant="h2" sx={{ fontSize: { xs: "2rem", md: "3rem" }, maxWidth: 580 }}>
-                Login, mailbox sync, and password recovery in one flow.
+              <Typography
+                variant="h2"
+                sx={{
+                  fontSize: { xs: "1.85rem", sm: "2.25rem", md: "3rem" },
+                  maxWidth: 580,
+                  "@media (min-width: 768px) and (max-width: 1024px)": {
+                    fontSize: "2.35rem",
+                  },
+                  "@media (min-width: 900px) and (max-width: 1024px)": {
+                    fontSize: "2.15rem",
+                  },
+                }}
+              >
+                Connect a mailbox and let the AI agent reply from it.
               </Typography>
               <Typography variant="body1" color="text.secondary" mt={1.5} maxWidth={560}>
-                The frontend talks to a protected Node.js API, user data is stored in MongoDB, and mailbox
-                routes unlock only after a valid JWT session is present.
+                The frontend sends the mailbox email and app password to your Node.js API. The backend validates
+                the inbox, stores the linked account, and starts the reply agent for that mailbox.
               </Typography>
             </Box>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap flexWrap="wrap">
-              <FeaturePill icon={<PersonRoundedIcon />} label="Username + email sign-in" />
-              <FeaturePill icon={<LockRoundedIcon />} label="Hashed passwords" />
-              <FeaturePill icon={<MarkEmailReadRoundedIcon />} label="Forgot / reset password" />
+              <FeaturePill icon={<EmailRoundedIcon />} label="IMAP verification" />
+              <FeaturePill icon={<LockRoundedIcon />} label="App password link" />
+              <FeaturePill icon={<MarkEmailReadRoundedIcon />} label="AI auto replies" />
             </Stack>
 
             <Box
               sx={{
                 mt: "auto",
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 borderRadius: 1,
                 background: "linear-gradient(135deg, rgba(94,231,255,0.09), rgba(34,197,94,0.08))",
                 border: "1px solid rgba(94,231,255,0.12)",
@@ -304,8 +347,8 @@ export function AuthPage({
                 What this setup includes
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={1}>
-                React auth screens, JWT token storage, MongoDB user documents, protected email APIs, and a
-                development-friendly reset token flow.
+                React mailbox linking, token storage, MongoDB EmailAccount documents, and per-mailbox reply
+                sessions that send from the connected address.
               </Typography>
             </Box>
           </Stack>
@@ -314,12 +357,20 @@ export function AuthPage({
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 3, md: 4 },
+            order: { xs: 1, lg: 2 },
+            p: { xs: 2.25, sm: 3, md: 4 },
             borderRadius: 1,
             border: "1px solid rgba(94,231,255,0.14)",
             background:
               "linear-gradient(180deg, rgba(8, 18, 32, 0.96) 0%, rgba(4, 10, 18, 0.98) 100%)",
             boxShadow: "0 28px 90px rgba(0,0,0,0.34)",
+            "@media (min-width: 481px) and (max-width: 899px)": {
+              p: 3,
+            },
+            "@media (min-width: 900px) and (max-width: 1024px)": {
+              order: 2,
+              p: 3,
+            },
           }}
         >
           <Stack spacing={2.5}>
@@ -360,16 +411,17 @@ export function AuthPage({
               <Stack spacing={2}>
                 {mode === "login" ? (
                   <TextField
-                    label="Email or username"
+                    label="Email address"
+                    type="email"
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
                     error={Boolean(validationErrors.identifier)}
                     helperText={validationErrors.identifier}
-                    autoComplete="username"
+                    autoComplete="email"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <PersonRoundedIcon fontSize="small" />
+                          <EmailRoundedIcon fontSize="small" />
                         </InputAdornment>
                       ),
                     }}
@@ -425,12 +477,15 @@ export function AuthPage({
 
                 {mode !== "forgot" ? (
                   <TextField
-                    label="Password"
+                    label={mode === "login" ? "App password" : "Password"}
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     error={Boolean(validationErrors.password)}
-                    helperText={validationErrors.password}
+                    helperText={
+                      validationErrors.password ||
+                      (mode === "login" ? "Use a Gmail/Yahoo app password, not the normal mailbox password." : "")
+                    }
                     autoComplete={mode === "login" ? "current-password" : "new-password"}
                     InputProps={{
                       startAdornment: (
@@ -484,24 +539,6 @@ export function AuthPage({
                   Already have an account?{" "}
                   <Link component="button" type="button" underline="hover" onClick={() => onNavigate("login")}>
                     Sign in
-                  </Link>
-                </Typography>
-              ) : null}
-
-              {mode !== "register" ? (
-                <Typography variant="body2" color="text.secondary">
-                  Need a new account?{" "}
-                  <Link component="button" type="button" underline="hover" onClick={() => onNavigate("register")}>
-                    Create one
-                  </Link>
-                </Typography>
-              ) : null}
-
-              {mode !== "forgot" ? (
-                <Typography variant="body2" color="text.secondary">
-                  Forgot your password?{" "}
-                  <Link component="button" type="button" underline="hover" onClick={() => onNavigate("forgot")}>
-                    Reset it
                   </Link>
                 </Typography>
               ) : null}

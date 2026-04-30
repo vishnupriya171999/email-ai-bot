@@ -21,7 +21,7 @@ export type PasswordResetRequestResponse = {
 };
 
 export type LoginPayload = {
-  identifier: string;
+  email: string;
   password: string;
 };
 
