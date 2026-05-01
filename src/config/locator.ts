@@ -26,6 +26,7 @@ export const EMAIL_ENDPOINTS = {
 export const AUTH_ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/auth/register`,
   LOGIN: `${API_BASE_URL}/auth/login`,
+  LOGOUT: `${API_BASE_URL}/auth/logout`,
   FORGOT_PASSWORD: `${API_BASE_URL}/auth/forgot-password`,
   RESET_PASSWORD: `${API_BASE_URL}/auth/reset-password`,
   ME: `${API_BASE_URL}/auth/me`,

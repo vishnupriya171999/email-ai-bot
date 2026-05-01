@@ -77,6 +77,10 @@ export async function loginUser(payload: LoginPayload) {
   return normalizeSession((response.data ?? {}) as Record<string, unknown>);
 }
 
+export async function logoutUser() {
+  await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
+}
+
 export async function requestPasswordReset(email: string) {
   const response = await apiClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, { email });
   const data = (response.data ?? {}) as Record<string, unknown>;

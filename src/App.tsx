@@ -470,7 +470,7 @@ function App() {
   );
 
   const handleLogout = useCallback(() => {
-    logout();
+    void logout();
     clearAuthFeedback();
     navigateToAuth("login", undefined, true);
   }, [clearAuthFeedback, logout, navigateToAuth]);

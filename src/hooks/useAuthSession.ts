@@ -9,6 +9,7 @@ import {
   ResetPasswordPayload,
   fetchCurrentUser,
   loginUser,
+  logoutUser,
   registerUser,
   requestPasswordReset,
   resetPassword,
@@ -94,9 +95,13 @@ export function useAuthSession() {
     return session.user;
   }, [dispatch]);
 
-  const logout = useCallback(() => {
-    clearStoredSession();
-    dispatch(clearSession());
+  const logout = useCallback(async () => {
+    try {
+      await logoutUser();
+    } finally {
+      clearStoredSession();
+      dispatch(clearSession());
+    }
   }, [dispatch]);
 
   return {
