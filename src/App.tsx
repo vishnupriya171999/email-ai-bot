@@ -247,8 +247,11 @@ function App() {
     mobileNavOpen,
     setMobileNavOpen,
     knowledgeBase,
+    knowledgeLoading,
     handleAddKnowledge,
     handleDeleteKnowledge,
+    handleSeedKnowledge,
+    handleSearchKnowledge,
     handleSeedSampleMail,
     handleToggleFlag,
     handleDeleteThread,
@@ -758,8 +761,11 @@ function App() {
                 {view === "knowledge" ? (
                   <KnowledgeBaseView
                     items={knowledgeBase}
+                    loading={knowledgeLoading}
                     onAddItem={handleAddKnowledge}
                     onDeleteItem={handleDeleteKnowledge}
+                    onSeedKnowledge={handleSeedKnowledge}
+                    onSearchKnowledge={handleSearchKnowledge}
                   />
                 ) : null}
 

@@ -1182,30 +1182,53 @@ export function InboxView({
 
 export function KnowledgeBaseView({
   items,
+  loading,
   onAddItem,
   onDeleteItem,
+  onSeedKnowledge,
+  onSearchKnowledge,
 }: {
   items: KnowledgeSnippet[];
-  onAddItem: (item: Omit<KnowledgeSnippet, "id" | "updatedAt">) => void;
-  onDeleteItem: (id: string) => void;
+  loading: boolean;
+  onAddItem: (item: Omit<KnowledgeSnippet, "id" | "updatedAt">) => Promise<void>;
+  onDeleteItem: (id: string) => Promise<void>;
+  onSeedKnowledge: () => Promise<void>;
+  onSearchKnowledge: (query: string) => Promise<void>;
 }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Support");
   const [content, setContent] = useState("");
+  const [tags, setTags] = useState("");
+  const [query, setQuery] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!title.trim() || !content.trim()) {
       return;
     }
 
-    onAddItem({
-      title: title.trim(),
-      category: category.trim() || "General",
-      content: content.trim(),
-    });
-    setTitle("");
-    setCategory("Support");
-    setContent("");
+    setSaving(true);
+    try {
+      await onAddItem({
+        title: title.trim(),
+        category: category.trim() || "General",
+        content: content.trim(),
+        tags: tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      });
+      setTitle("");
+      setCategory("Support");
+      setContent("");
+      setTags("");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSearch = () => {
+    void onSearchKnowledge(query);
   };
 
   return (
@@ -1217,6 +1240,7 @@ export function KnowledgeBaseView({
         <Stack spacing={1.25}>
           <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} fullWidth />
           <TextField label="Category" value={category} onChange={(event) => setCategory(event.target.value)} fullWidth />
+          <TextField label="Tags" value={tags} onChange={(event) => setTags(event.target.value)} fullWidth placeholder="billing, refund, setup" />
           <TextField
             label="Content"
             value={content}
@@ -1225,31 +1249,59 @@ export function KnowledgeBaseView({
             multiline
             minRows={8}
           />
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={handleAdd}>
+          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={handleAdd} disabled={saving || loading}>
             Save snippet
+          </Button>
+          <Button variant="outlined" startIcon={<LightbulbRoundedIcon />} onClick={() => void onSeedKnowledge()} disabled={saving || loading}>
+            Add starter snippets
           </Button>
         </Stack>
       </Paper>
 
       <Paper sx={panelStyle}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.25}>
+        <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} gap={1} mb={1.25}>
           <Box>
             <Typography variant="h6" fontWeight={800}>
               Knowledge base
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Snippets the AI uses to answer mail consistently.
+              Snippets saved in Meilisearch and used by the AI before it replies.
             </Typography>
           </Box>
           <Chip icon={<LightbulbRoundedIcon />} label={`${items.length} snippets`} color="primary" />
         </Stack>
 
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} mb={1.25}>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Search FAQs, policies, templates"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                handleSearch();
+              }
+            }}
+          />
+          <Button variant="outlined" startIcon={<SearchRoundedIcon />} onClick={handleSearch} disabled={loading}>
+            Search
+          </Button>
+        </Stack>
+
+        {loading ? <LinearProgress sx={{ mb: 1.25, borderRadius: 999 }} /> : null}
+
         <Stack spacing={1.25}>
-          {items.length === 0 ? (
+          {loading && items.length === 0 ? (
+            <>
+              <Skeleton variant="rounded" height={108} />
+              <Skeleton variant="rounded" height={108} />
+            </>
+          ) : items.length === 0 ? (
             <EmptyState
               icon={<LightbulbRoundedIcon fontSize="large" />}
-              title="No snippets yet"
-              description="Add policies, product notes, and tone guidance for the agent."
+              title="No matching snippets"
+              description="Add knowledge or search for another policy, FAQ, or template."
             />
           ) : (
             items.map((item) => (
@@ -1273,11 +1325,18 @@ export function KnowledgeBaseView({
                     <Typography variant="body2" color="text.secondary" mt={1}>
                       {item.content}
                     </Typography>
+                    {item.tags?.length ? (
+                      <Stack direction="row" spacing={0.75} mt={1} flexWrap="wrap" useFlexGap>
+                        {item.tags.map((tag) => (
+                          <Chip key={tag} size="small" label={tag} variant="outlined" />
+                        ))}
+                      </Stack>
+                    ) : null}
                     <Typography variant="caption" color="text.secondary">
                       Updated {formatDate(item.updatedAt)}
                     </Typography>
                   </Box>
-                  <IconButton onClick={() => onDeleteItem(item.id)} aria-label={`Delete ${item.title}`}>
+                  <IconButton onClick={() => void onDeleteItem(item.id)} aria-label={`Delete ${item.title}`}>
                     <DeleteOutlineRoundedIcon fontSize="small" />
                   </IconButton>
                 </Stack>

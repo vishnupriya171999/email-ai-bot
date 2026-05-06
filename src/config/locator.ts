@@ -23,6 +23,14 @@ export const EMAIL_ENDPOINTS = {
   AI_REPLY: `${API_BASE_URL}/emails/ai-reply`,
 };
 
+export const KNOWLEDGE_ENDPOINTS = {
+  LIST: `${API_BASE_URL}/knowledge/documents`,
+  CREATE: `${API_BASE_URL}/knowledge/documents`,
+  SEARCH: `${API_BASE_URL}/knowledge/search`,
+  SEED: `${API_BASE_URL}/knowledge/seed`,
+  DOCUMENT: `${API_BASE_URL}/knowledge/documents`,
+};
+
 export const AUTH_ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/auth/register`,
   LOGIN: `${API_BASE_URL}/auth/login`,

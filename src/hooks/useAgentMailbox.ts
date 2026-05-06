@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createOutboundMail,
+  createKnowledgeSnippet,
   createSampleInboundMail,
+  deleteKnowledgeSnippet,
   fetchInboxMails,
+  fetchKnowledgeBase,
   fetchThread,
   KnowledgeSnippet,
   MailItem,
   MailThread,
+  searchKnowledgeBase,
+  seedKnowledgeBase,
   summarizeThreads,
 } from "../services/mailService";
 
 const STORAGE_KEYS = {
-  KNOWLEDGE_BASE: "ai-agent-knowledge-base",
   FLAGGED_THREADS: "ai-agent-flagged-threads",
   HIDDEN_THREADS: "ai-agent-hidden-threads",
 };
@@ -45,26 +49,6 @@ export type ViewKey = "home" | "inbox" | "knowledge" | "analytics";
 export type ThreadSummary = MailThread & {
   flagged: boolean;
 };
-
-function loadKnowledgeBase(): KnowledgeSnippet[] {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.KNOWLEDGE_BASE);
-
-    if (!raw) {
-      return DEFAULT_KNOWLEDGE_BASE;
-    }
-
-    const parsed = JSON.parse(raw);
-
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return DEFAULT_KNOWLEDGE_BASE;
-    }
-
-    return parsed;
-  } catch {
-    return DEFAULT_KNOWLEDGE_BASE;
-  }
-}
 
 function loadIdList(storageKey: string): string[] {
   try {
@@ -115,18 +99,11 @@ export function useAgentMailbox({ userEmail, enabled = true }: UseAgentMailboxOp
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeSnippet[]>(loadKnowledgeBase);
+  const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeSnippet[]>(DEFAULT_KNOWLEDGE_BASE);
+  const [knowledgeLoading, setKnowledgeLoading] = useState(false);
   const [threadsById, setThreadsById] = useState<Record<string, MailItem[]>>({});
   const [flaggedThreadIds, setFlaggedThreadIds] = useState<string[]>(() => loadIdList(STORAGE_KEYS.FLAGGED_THREADS));
   const [hiddenThreadIds, setHiddenThreadIds] = useState<string[]>(() => loadIdList(STORAGE_KEYS.HIDDEN_THREADS));
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEYS.KNOWLEDGE_BASE, JSON.stringify(knowledgeBase));
-    } catch {
-      // Best effort only.
-    }
-  }, [knowledgeBase]);
 
   useEffect(() => {
     try {
@@ -221,6 +198,22 @@ export function useAgentMailbox({ userEmail, enabled = true }: UseAgentMailboxOp
     }
   }, [enabled, hiddenThreadIds]);
 
+  const loadKnowledge = useCallback(async () => {
+    if (!enabled) {
+      return;
+    }
+
+    setKnowledgeLoading(true);
+    try {
+      const items = await fetchKnowledgeBase();
+      setKnowledgeBase(items.length ? items : DEFAULT_KNOWLEDGE_BASE);
+    } catch (knowledgeError) {
+      setError(knowledgeError instanceof Error ? knowledgeError.message : "Unable to load knowledge base.");
+    } finally {
+      setKnowledgeLoading(false);
+    }
+  }, [enabled]);
+
   useEffect(() => {
     if (!enabled) {
       setLoading(false);
@@ -233,13 +226,14 @@ export function useAgentMailbox({ userEmail, enabled = true }: UseAgentMailboxOp
     }
 
     void loadMailbox();
+    void loadKnowledge();
 
     const interval = window.setInterval(() => {
       void loadMailbox({ showSpinner: false });
     }, 45000);
 
     return () => window.clearInterval(interval);
-  }, [enabled, loadMailbox]);
+  }, [enabled, loadKnowledge, loadMailbox]);
 
   const threads = useMemo<ThreadSummary[]>(
     () =>
@@ -331,21 +325,50 @@ export function useAgentMailbox({ userEmail, enabled = true }: UseAgentMailboxOp
     };
   }, [knowledgeBase.length, mails, threadsById]);
 
-  const handleAddKnowledge = (item: Omit<KnowledgeSnippet, "id" | "updatedAt">) => {
-    setKnowledgeBase((current) => [
-      {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        updatedAt: new Date().toISOString(),
-        ...item,
-      },
-      ...current,
-    ]);
-    setStatusMessage("Knowledge snippet added.");
+  const handleAddKnowledge = async (item: Omit<KnowledgeSnippet, "id" | "updatedAt">) => {
+    try {
+      setError(null);
+      await createKnowledgeSnippet(item);
+      await loadKnowledge();
+      setStatusMessage("Knowledge snippet added to Meilisearch.");
+    } catch (knowledgeError) {
+      setError(knowledgeError instanceof Error ? knowledgeError.message : "Unable to add knowledge snippet.");
+    }
   };
 
-  const handleDeleteKnowledge = (id: string) => {
-    setKnowledgeBase((current) => current.filter((item) => item.id !== id));
-    setStatusMessage("Knowledge snippet removed.");
+  const handleDeleteKnowledge = async (id: string) => {
+    try {
+      setError(null);
+      await deleteKnowledgeSnippet(id);
+      setKnowledgeBase((current) => current.filter((item) => item.id !== id));
+      setStatusMessage("Knowledge snippet removed from Meilisearch.");
+    } catch (knowledgeError) {
+      setError(knowledgeError instanceof Error ? knowledgeError.message : "Unable to remove knowledge snippet.");
+    }
+  };
+
+  const handleSeedKnowledge = async () => {
+    try {
+      setError(null);
+      await seedKnowledgeBase();
+      await loadKnowledge();
+      setStatusMessage("Starter knowledge added to Meilisearch.");
+    } catch (knowledgeError) {
+      setError(knowledgeError instanceof Error ? knowledgeError.message : "Unable to seed knowledge base.");
+    }
+  };
+
+  const handleSearchKnowledge = async (query: string) => {
+    try {
+      setError(null);
+      setKnowledgeLoading(true);
+      const results = await searchKnowledgeBase(query);
+      setKnowledgeBase(results.length ? results : []);
+    } catch (knowledgeError) {
+      setError(knowledgeError instanceof Error ? knowledgeError.message : "Unable to search knowledge base.");
+    } finally {
+      setKnowledgeLoading(false);
+    }
   };
 
   const handleSeedSampleMail = async () => {
@@ -422,8 +445,11 @@ export function useAgentMailbox({ userEmail, enabled = true }: UseAgentMailboxOp
     mobileNavOpen,
     setMobileNavOpen,
     knowledgeBase,
+    knowledgeLoading,
     handleAddKnowledge,
     handleDeleteKnowledge,
+    handleSeedKnowledge,
+    handleSearchKnowledge,
     handleSeedSampleMail,
     handleToggleFlag,
     handleDeleteThread,

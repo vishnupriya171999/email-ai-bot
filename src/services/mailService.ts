@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import { API_BASE_URL, EMAIL_ENDPOINTS } from "../config/locator";
+import { API_BASE_URL, EMAIL_ENDPOINTS, KNOWLEDGE_ENDPOINTS } from "../config/locator";
 
 export type RawMail = Record<string, any>;
 
@@ -56,6 +56,7 @@ export type KnowledgeSnippet = {
   category: string;
   content: string;
   updatedAt: string;
+  tags?: string[];
 };
 
 export type ThreadResponse = {
@@ -198,6 +199,57 @@ export async function createOutboundMail(payload: Omit<OutboundMailPayload, "isI
 
   const data = response.data as RawMail;
   return data?.email ? normalizeMail(data.email) : normalizeMail(data);
+}
+
+function normalizeKnowledge(raw: RawMail): KnowledgeSnippet {
+  return {
+    id: String(raw.id ?? raw._id ?? `${Date.now()}-${Math.random()}`),
+    title: toText(raw.title ?? raw.question, "Untitled knowledge"),
+    category: toText(raw.category, "general"),
+    content: toText(raw.content ?? raw.answer, ""),
+    updatedAt: toText(raw.updatedAt ?? raw.createdAt, new Date().toISOString()),
+    tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
+  };
+}
+
+export async function fetchKnowledgeBase(): Promise<KnowledgeSnippet[]> {
+  const response = await apiClient.get(KNOWLEDGE_ENDPOINTS.LIST);
+  const items = Array.isArray(response.data?.documents) ? response.data.documents : [];
+
+  return items.map(normalizeKnowledge);
+}
+
+export async function createKnowledgeSnippet(payload: Omit<KnowledgeSnippet, "id" | "updatedAt">) {
+  const response = await apiClient.post(KNOWLEDGE_ENDPOINTS.CREATE, {
+    title: payload.title,
+    category: payload.category,
+    content: payload.content,
+    tags: payload.tags ?? [],
+  });
+  const documents = Array.isArray(response.data?.documents) ? response.data.documents : [];
+
+  return documents[0] ? normalizeKnowledge(documents[0]) : null;
+}
+
+export async function deleteKnowledgeSnippet(id: string) {
+  await apiClient.delete(`${KNOWLEDGE_ENDPOINTS.DOCUMENT}/${encodeURIComponent(id)}`);
+}
+
+export async function seedKnowledgeBase() {
+  await apiClient.post(KNOWLEDGE_ENDPOINTS.SEED);
+}
+
+export async function searchKnowledgeBase(query: string): Promise<KnowledgeSnippet[]> {
+  if (!query.trim()) {
+    return fetchKnowledgeBase();
+  }
+
+  const response = await apiClient.get(KNOWLEDGE_ENDPOINTS.SEARCH, {
+    params: { q: query, limit: 25 },
+  });
+  const items = Array.isArray(response.data?.hits) ? response.data.hits : [];
+
+  return items.map(normalizeKnowledge);
 }
 
 function extractReplyDraft(data: unknown) {
