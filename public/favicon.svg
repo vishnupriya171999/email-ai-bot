@@ -1,19 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AI Mail Agent">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5ee7ff"/>
-      <stop offset="100%" stop-color="#8b5cf6"/>
+    <linearGradient id="shell" x1="8" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5ee7ff"/>
+      <stop offset="0.48" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#22c55e"/>
     </linearGradient>
-    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8be9ff"/>
-      <stop offset="100%" stop-color="#c4b5fd"/>
+    <linearGradient id="panel" x1="16" y1="16" x2="49" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102944"/>
+      <stop offset="1" stop-color="#061322"/>
     </linearGradient>
+    <linearGradient id="mail" x1="17" y1="23" x2="47" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#baf6ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.37 0 0 0 0 0.91 0 0 0 0 1 0 0 0 0.55 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="18" fill="#020816"/>
-  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#bg)"/>
-  <circle cx="32" cy="32" r="17" fill="none" stroke="url(#ring)" stroke-width="2.5" opacity="0.35"/>
-  <path d="M18 23h28l-14 11-14-11Z" fill="#f8fbff"/>
-  <path d="M18 27.5V41h28V27.5l-14 11-14-11Z" fill="#e7f9ff" opacity="0.95"/>
-  <path d="M21 20.5h22" stroke="#ffffff" stroke-linecap="round" stroke-width="2" opacity="0.45"/>
-  <text x="32" y="47" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#ffffff">AI</text>
+
+  <rect width="64" height="64" rx="16" fill="#020816"/>
+  <path d="M32 5l22.9 13.2v26.6L32 58 9.1 44.8V18.2L32 5Z" fill="url(#shell)" filter="url(#glow)"/>
+  <path d="M32 10.8l17.9 10.3v20.8L32 52.2 14.1 41.9V21.1L32 10.8Z" fill="url(#panel)" stroke="rgba(255,255,255,0.28)" stroke-width="1.4"/>
+
+  <path d="M19 25.5c0-2 1.6-3.5 3.5-3.5h19c1.9 0 3.5 1.5 3.5 3.5v1.1L32 35.5 19 26.6v-1.1Z" fill="url(#mail)"/>
+  <path d="M19 29.8l11.4 7.6c1 .7 2.2.7 3.2 0L45 29.8v10.7c0 2-1.6 3.5-3.5 3.5h-19c-1.9 0-3.5-1.5-3.5-3.5V29.8Z" fill="#dffaff"/>
+
+  <circle cx="46" cy="18" r="6.2" fill="#020816" stroke="#5ee7ff" stroke-width="1.4"/>
+  <path d="M43.2 18h5.6M46 15.2v5.6" stroke="#5ee7ff" stroke-width="1.5" stroke-linecap="round"/>
+
+  <circle cx="24" cy="44.2" r="6.8" fill="#020816" stroke="#22c55e" stroke-width="1.4"/>
+  <path d="M20.8 46.6l2.6-6.4h1.4l2.6 6.4h-1.5l-.5-1.3h-2.6l-.5 1.3h-1.5Zm2.4-2.5H25l-.9-2.3-.9 2.3Z" fill="#eafff2"/>
+  <path d="M28.6 46.6v-6.4H30v6.4h-1.4Z" fill="#eafff2"/>
 </svg>

@@ -15,6 +15,14 @@ export type MailItem = {
   aiGenerated: boolean;
   cc?: string[];
   bcc?: string[];
+  imageUrl?: string;
+  imageAlt?: string;
+  attachments?: Array<{
+    id: string;
+    name: string;
+    url: string;
+    type: string;
+  }>;
 };
 
 export type MailThread = {
@@ -38,6 +46,9 @@ export type InboundMailPayload = {
   content: string;
   threadId: string;
   isInbound: true;
+  imageUrl?: string;
+  imageAlt?: string;
+  attachments?: MailItem["attachments"];
 };
 
 export type OutboundMailPayload = {
@@ -48,6 +59,9 @@ export type OutboundMailPayload = {
   threadId: string;
   isInbound: false;
   aiGenerated?: boolean;
+  imageUrl?: string;
+  imageAlt?: string;
+  attachments?: MailItem["attachments"];
 };
 
 export type KnowledgeSnippet = {
@@ -99,6 +113,46 @@ const toTextList = (value: unknown) => {
   return value.map((item) => toText(item)).filter((item) => item.length > 0);
 };
 
+const toAttachmentList = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item, index) => {
+      if (typeof item === "string") {
+        return {
+          id: `attachment-${index}`,
+          name: `Attachment ${index + 1}`,
+          url: item,
+          type: item.match(/\.(png|jpe?g|gif|webp|avif|svg)(\?|$)/i) ? "image" : "file",
+        };
+      }
+
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const rawAttachment = item as Record<string, unknown>;
+      const url = toText(rawAttachment.url ?? rawAttachment.href ?? rawAttachment.src ?? rawAttachment.path);
+
+      if (!url) {
+        return null;
+      }
+
+      const name = toText(rawAttachment.name ?? rawAttachment.filename ?? rawAttachment.title, `Attachment ${index + 1}`);
+      const type = toText(rawAttachment.type ?? rawAttachment.mimeType ?? rawAttachment.contentType, "");
+
+      return {
+        id: toText(rawAttachment.id ?? rawAttachment._id, `attachment-${index}`),
+        name,
+        url,
+        type: type || (url.match(/\.(png|jpe?g|gif|webp|avif|svg)(\?|$)/i) ? "image" : "file"),
+      };
+    })
+    .filter((item): item is { id: string; name: string; url: string; type: string } => Boolean(item));
+};
+
 function requestToMailThreadList(mails: MailItem[]): MailThread[] {
   const grouped = mails.reduce<Record<string, MailItem[]>>((acc, mail) => {
     if (!acc[mail.threadId]) {
@@ -140,6 +194,18 @@ export function normalizeMail(raw: RawMail): MailItem {
   const inboundValue = raw.isInbound ?? raw.is_inbound ?? raw.inbound ?? 1;
   const isInbound = Number(inboundValue) === 1 || inboundValue === true ? 1 : 0;
   const threadIdFallback = toText(raw._id ?? raw.id ?? "", `thread-${Date.now()}`);
+  const attachments = toAttachmentList(raw.attachments ?? raw.files ?? raw.media);
+  const firstImageAttachment = attachments.find((attachment) => attachment.type.toLowerCase().includes("image"));
+  const imageUrl = toText(
+    raw.imageUrl ??
+      raw.image_url ??
+      raw.image ??
+      raw.thumbnail ??
+      raw.thumbnailUrl ??
+      raw.previewImage ??
+      raw.preview_image ??
+      firstImageAttachment?.url
+  );
 
   return {
     id: String(raw._id ?? raw.id ?? `${Date.now()}-${Math.random()}`),
@@ -153,6 +219,9 @@ export function normalizeMail(raw: RawMail): MailItem {
     aiGenerated: Boolean(raw.aiGenerated ?? raw.ai_generated ?? isInbound === 0),
     cc: toTextList(raw.cc),
     bcc: toTextList(raw.bcc),
+    imageUrl: imageUrl || undefined,
+    imageAlt: toText(raw.imageAlt ?? raw.image_alt ?? raw.alt, "Email visual attachment"),
+    attachments,
   };
 }
 

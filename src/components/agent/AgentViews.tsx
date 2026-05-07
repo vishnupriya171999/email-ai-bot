@@ -221,28 +221,7 @@ export function AgentSidebar({
         </Typography>
       </Paper>
 
-      <Box sx={{ mt: "auto" }}>
-        <Typography variant="caption" color="text.secondary">
-          Signed in as
-        </Typography>
-        <Typography variant="subtitle2" fontWeight={800} noWrap>
-          {accountName}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Connected mailbox
-        </Typography>
-        <Typography variant="body2" fontWeight={700}>
-          {defaultUserEmail}
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<LogoutRoundedIcon />}
-          onClick={onLogout}
-          sx={{ mt: 1.5, width: "100%" }}
-        >
-          Log out
-        </Button>
-      </Box>
+      <Box sx={{ mt: "auto" }} />
     </Paper>
   );
 }
@@ -297,12 +276,10 @@ export function AgentHeader({
       aria-expanded={profileOpen ? "true" : undefined}
       sx={{
         p: 0.35,
-        borderRadius: 1,
-        border: "1px solid rgba(94,231,255,0.18)",
-        bgcolor: "rgba(94,231,255,0.08)",
-        "&:hover": {
-          bgcolor: "rgba(94,231,255,0.14)",
-        },
+        borderRadius: 999,
+        border: "1px solid transparent",
+        bgcolor: "transparent",
+        "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
       }}
     >
       <Avatar
@@ -310,9 +287,9 @@ export function AgentHeader({
           width: { xs: 34, md: 38 },
           height: { xs: 34, md: 38 },
           fontSize: { xs: "0.78rem", md: "0.85rem" },
-          bgcolor: "rgba(94,231,255,0.14)",
-          color: "primary.main",
-          border: "1px solid rgba(94,231,255,0.22)",
+          bgcolor: "rgba(255,255,255,0.07)",
+          color: "text.primary",
+          border: "1px solid rgba(255,255,255,0.08)",
         }}
       >
         {initials}
@@ -368,14 +345,12 @@ export function AgentHeader({
             justifyContent={{ xs: "flex-start", md: "flex-end" }}
             sx={{ justifySelf: { md: "end" } }}
           >
-            <Chip icon={<InboxRoundedIcon />} label={`${stats.inboundCount} inbound`} sx={{ bgcolor: "rgba(94,231,255,0.12)", color: "text.primary" }} />
-            <Chip icon={<ReplyRoundedIcon />} label={`${stats.autoReplyCount} auto replies`} sx={{ bgcolor: "rgba(34,197,94,0.12)", color: "text.primary" }} />
             <Button
               variant="outlined"
               startIcon={<RefreshRoundedIcon />}
               onClick={onRefresh}
               disabled={refreshing || loading}
-              sx={{ borderRadius: 1, width: { xs: "100%", sm: "auto" } }}
+              sx={{ borderRadius: 999, px: 2, width: { xs: "100%", sm: "auto" } }}
             >
               Sync
             </Button>
@@ -388,6 +363,7 @@ export function AgentHeader({
         open={profileOpen}
         anchorEl={profileAnchor}
         onClose={closeProfile}
+        disableScrollLock
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{
@@ -467,7 +443,7 @@ export function HomeView({
   onSeedSampleMail: () => void;
 }) {
   return (
-    <Stack spacing={1.75} sx={{ height: "100%", minHeight: 0, overflowY: "auto", pr: 0.5 }}>
+    <Stack spacing={1.75} sx={{ height: "100%", minHeight: 0, overflow: "hidden" }}>
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 1.25 }}>
         <MetricCard icon={<InboxRoundedIcon />} title="Inbound" value={stats.inboundCount} accent="rgba(94,231,255,0.18)" />
         <MetricCard icon={<ReplyRoundedIcon />} title="Auto replies" value={stats.autoReplyCount} accent="rgba(34,197,94,0.18)" />
@@ -476,14 +452,23 @@ export function HomeView({
 
       <Box
         sx={{
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.2fr) minmax(320px, 0.8fr)" },
-          gap: 2,
-          alignItems: "start",
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
         }}
       >
-        <Paper sx={{ ...panelStyle, width: "100%", minWidth: 0 }}>
+        <Box
+          sx={{
+            width: "100%",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1.2fr) minmax(320px, 0.8fr)" },
+            gap: 2,
+            alignItems: "start",
+            height: "100%",
+            minHeight: 0,
+          }}
+        >
+          <Paper sx={{ ...panelStyle, width: "100%", minWidth: 0, height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
@@ -502,37 +487,61 @@ export function HomeView({
             <Chip icon={<TrendingUpRoundedIcon />} label="Live" color="primary" sx={{ flexShrink: 0 }} />
           </Stack>
 
-          {loading ? (
-            <Stack spacing={1.25}>
-              <Skeleton variant="rounded" height={86} />
-              <Skeleton variant="rounded" height={86} />
-              <Skeleton variant="rounded" height={86} />
-            </Stack>
-          ) : recentThreads.length === 0 ? (
-            <EmptyState
-              icon={<MailOutlineRoundedIcon fontSize="large" />}
-              title="No messages yet"
-              description="As soon as mail arrives, the agent will answer and track the thread."
-            />
-          ) : (
-            <Stack spacing={1.25}>
-              {recentThreads.slice(0, 4).map((thread) => (
-                <MailPreview
-                  key={thread.threadId}
-                  thread={thread}
-                  active={selectedThreadId === thread.threadId}
-                  onClick={() => onOpenThread(thread)}
-                />
-              ))}
-            </Stack>
-          )}
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              pr: 0.5,
+              pb: { xs: "max(16px, env(safe-area-inset-bottom))", sm: 2 },
+              scrollbarGutter: "stable",
+              overscrollBehaviorY: "contain",
+              WebkitOverflowScrolling: "touch",
+            }}
+          >
+            {loading ? (
+              <Stack spacing={1.25}>
+                <Skeleton variant="rounded" height={86} />
+                <Skeleton variant="rounded" height={86} />
+                <Skeleton variant="rounded" height={86} />
+              </Stack>
+            ) : recentThreads.length === 0 ? (
+              <EmptyState
+                icon={<MailOutlineRoundedIcon fontSize="large" />}
+                title="No messages yet"
+                description="As soon as mail arrives, the agent will answer and track the thread."
+              />
+            ) : (
+              <Stack spacing={1.25}>
+                {recentThreads.slice(0, 4).map((thread) => (
+                  <MailPreview
+                    key={thread.threadId}
+                    thread={thread}
+                    active={selectedThreadId === thread.threadId}
+                    onClick={() => onOpenThread(thread)}
+                  />
+                ))}
+              </Stack>
+            )}
+          </Box>
         </Paper>
 
-        <Paper sx={{ ...panelStyle, width: "100%", minWidth: 0 }}>
+          <Paper
+            sx={{
+              ...panelStyle,
+              width: "100%",
+              minWidth: 0,
+              height: "100%",
+              minHeight: 0,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
           <Typography variant="h6" fontWeight={800} mb={1.25}>
             Quick access
           </Typography>
-          <Stack spacing={1.25}>
+          <Stack spacing={1.25} className="hide-scrollbar" sx={{ flex: 1, minHeight: 0, overflowY: "auto", pr: 0.25 }}>
             <ActionCard
               icon={<InboxRoundedIcon />}
               title="Inbox"
@@ -563,6 +572,7 @@ export function HomeView({
             />
           </Stack>
         </Paper>
+        </Box>
       </Box>
     </Stack>
   );
@@ -799,7 +809,7 @@ export function InboxView({
   };
 
   const threadPanel = (showCloseButton: boolean) => (
-    <Stack spacing={2} sx={{ flex: 1, height: "100%", minHeight: 0, overflow: "hidden" }}>
+    <Stack spacing={2} sx={{ flex: 1, height: "100%", minHeight: 0, overflow: "visible" }}>
       <Box>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
           <Box>
@@ -879,6 +889,7 @@ export function InboxView({
             minHeight: 0,
             overflowY: "auto",
             pr: 0.5,
+            pb: { xs: "max(16px, env(safe-area-inset-bottom))", sm: 2 },
             scrollbarGutter: "stable",
             overscrollBehaviorY: "contain",
             WebkitOverflowScrolling: "touch",
@@ -1232,7 +1243,18 @@ export function KnowledgeBaseView({
   };
 
   return (
-    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "420px 1fr" }, gap: 1.75, height: "100%", minHeight: 0, overflowY: "auto", pr: 0.5 }}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", lg: "420px 1fr" },
+        gap: 1.75,
+        height: "100%",
+        minHeight: 0,
+        overflowY: "auto",
+        pr: 0.5,
+        pb: { xs: "max(16px, env(safe-area-inset-bottom))", sm: 2 },
+      }}
+    >
       <Paper sx={panelStyle}>
         <Typography variant="h6" fontWeight={800} mb={1.25}>
           Add knowledge
@@ -1359,7 +1381,16 @@ export function AnalyticsView({
   const latencyHealth = Math.max(0, 100 - Math.min(100, Math.round(stats.avgReplyMinutes * 5)));
 
   return (
-    <Stack spacing={2} sx={{ height: "100%", minHeight: 0, overflowY: "auto", pr: 0.5 }}>
+    <Stack
+      spacing={2}
+      sx={{
+        height: "100%",
+        minHeight: 0,
+        overflowY: "auto",
+        pr: 0.5,
+        pb: { xs: "max(16px, env(safe-area-inset-bottom))", sm: 2 },
+      }}
+    >
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" }, gap: 1.25 }}>
         <MetricCard icon={<ReplyRoundedIcon />} title="Auto replies" value={stats.autoReplyCount} accent="rgba(34,197,94,0.18)" />
         <MetricCard icon={<InboxRoundedIcon />} title="Pending" value={stats.pendingCount} accent="rgba(245,158,11,0.18)" />

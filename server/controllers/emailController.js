@@ -29,9 +29,48 @@ function toApiMail(emailDoc) {
     aiGenerated: Boolean(emailDoc.aiGenerated),
     cc: emailDoc.cc || [],
     bcc: emailDoc.bcc || [],
+    imageUrl: emailDoc.imageUrl || "",
+    imageAlt: emailDoc.imageAlt || "Email visual attachment",
+    attachments: emailDoc.attachments || [],
     createdAt: emailDoc.createdAt,
     updatedAt: emailDoc.updatedAt,
   };
+}
+
+function normalizeAttachments(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item, index) => {
+      if (typeof item === "string") {
+        return {
+          id: `attachment-${index}`,
+          name: `Attachment ${index + 1}`,
+          url: item.trim(),
+          type: /\.(png|jpe?g|gif|webp|avif|svg)(\?|$)/i.test(item) ? "image" : "file",
+        };
+      }
+
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const url = String(item.url || item.href || item.src || item.path || "").trim();
+      if (!url) {
+        return null;
+      }
+
+      return {
+        id: String(item.id || item._id || `attachment-${index}`).trim(),
+        name: String(item.name || item.filename || item.title || `Attachment ${index + 1}`).trim(),
+        url,
+        type: String(item.type || item.mimeType || item.contentType || "").trim() ||
+          (/\.(png|jpe?g|gif|webp|avif|svg)(\?|$)/i.test(url) ? "image" : "file"),
+      };
+    })
+    .filter(Boolean);
 }
 
 async function listEmails(req, res) {
@@ -53,6 +92,9 @@ async function createEmail(req, res) {
   const threadId = String(req.body.threadId || `thread-${Date.now()}`).trim();
   const isInbound = normalizeBoolean(req.body.isInbound, true);
   const aiGenerated = normalizeBoolean(req.body.aiGenerated, false);
+  const imageUrl = String(req.body.imageUrl || req.body.image_url || req.body.image || "").trim();
+  const imageAlt = String(req.body.imageAlt || req.body.image_alt || req.body.alt || "Email visual attachment").trim();
+  const attachments = normalizeAttachments(req.body.attachments || req.body.files || req.body.media);
 
   if (!sender || !receiver) {
     return res.status(400).json({ message: "Sender and receiver are required." });
@@ -67,6 +109,9 @@ async function createEmail(req, res) {
     threadId,
     isInbound,
     aiGenerated,
+    imageUrl,
+    imageAlt,
+    attachments,
   });
 
   let aiReply = null;

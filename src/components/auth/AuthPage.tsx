@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Divider,
   IconButton,
   InputAdornment,
@@ -77,10 +78,10 @@ function getModeCopy(mode: AuthMode) {
   }
 
   return {
-    badge: "Connect mailbox",
-    title: "Connect your AI reply mailbox",
-    description: "Use a Gmail or Yahoo address with an app password. The backend verifies IMAP before linking it.",
-    primaryAction: "Connect mailbox",
+    badge: "Sign in",
+    title: "Sign in to your AI Mail Agent",
+    description: "Use your registered email and app password to access your account and continue managing replies.",
+    primaryAction: "Sign in",
   };
 }
 
@@ -98,6 +99,31 @@ export function AuthPage({
   onNavigate,
   onClearFeedback,
 }: Props) {
+  const authInputSx = {
+    "& .MuiOutlinedInput-root": {
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderColor: "rgba(94,231,255,0.22) !important",
+      },
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: "rgba(94,231,255,0.22) !important",
+      },
+      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+        borderColor: "rgba(94,231,255,0.22) !important",
+      },
+      "&.Mui-focused": {
+        boxShadow: "none",
+      },
+    },
+    "& .MuiInputBase-input:focus": {
+      outline: "none",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "text.secondary",
+    },
+  };
+
+  const authInputClassName = "auth-input-no-blue";
+
   const copy = useMemo(() => getModeCopy(mode), [mode]);
   const [identifier, setIdentifier] = useState("");
   const [username, setUsername] = useState("");
@@ -411,6 +437,7 @@ export function AuthPage({
               <Stack spacing={2}>
                 {mode === "login" ? (
                   <TextField
+                    className={authInputClassName}
                     label="Email address"
                     type="email"
                     value={identifier}
@@ -425,11 +452,13 @@ export function AuthPage({
                         </InputAdornment>
                       ),
                     }}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 {mode === "register" ? (
                   <TextField
+                    className={authInputClassName}
                     label="Username"
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
@@ -443,11 +472,13 @@ export function AuthPage({
                         </InputAdornment>
                       ),
                     }}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 {mode === "register" || mode === "forgot" ? (
                   <TextField
+                    className={authInputClassName}
                     label="Email address"
                     type="email"
                     value={email}
@@ -462,21 +493,25 @@ export function AuthPage({
                         </InputAdornment>
                       ),
                     }}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 {mode === "reset" ? (
                   <TextField
+                    className={authInputClassName}
                     label="Reset token"
                     value={manualToken}
                     onChange={(event) => setManualToken(event.target.value)}
                     error={Boolean(validationErrors.token)}
                     helperText={validationErrors.token || "Paste the token if you are not using the reset link."}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 {mode !== "forgot" ? (
                   <TextField
+                    className={authInputClassName}
                     label={mode === "login" ? "App password" : "Password"}
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -501,11 +536,13 @@ export function AuthPage({
                         </InputAdornment>
                       ),
                     }}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 {mode === "register" || mode === "reset" ? (
                   <TextField
+                    className={authInputClassName}
                     label="Confirm password"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
@@ -522,11 +559,20 @@ export function AuthPage({
                         </InputAdornment>
                       ),
                     }}
+                    sx={authInputSx}
                   />
                 ) : null}
 
                 <Button type="submit" size="large" variant="contained" disabled={submitting} sx={{ py: 1.3 }}>
-                  {submitting ? "Please wait..." : copy.primaryAction}
+                  {submitting ? (
+                    <span className="ai-button-loader" aria-label="Loading">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                  ) : (
+                    copy.primaryAction
+                  )}
                 </Button>
               </Stack>
             </Box>

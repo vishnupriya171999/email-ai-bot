@@ -49,6 +49,43 @@ const emailSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    imageUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    imageAlt: {
+      type: String,
+      default: "Email visual attachment",
+      trim: true,
+    },
+    attachments: {
+      type: [
+        {
+          id: {
+            type: String,
+            default: "",
+            trim: true,
+          },
+          name: {
+            type: String,
+            default: "Attachment",
+            trim: true,
+          },
+          url: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          type: {
+            type: String,
+            default: "file",
+            trim: true,
+          },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

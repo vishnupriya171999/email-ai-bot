@@ -163,14 +163,15 @@ const theme = createTheme({
   shape: {
     borderRadius: 2,
   },
+  spacing: 8,
   typography: {
     fontFamily: ['"Inter"', '"Segoe UI"', "system-ui", "sans-serif"].join(","),
-    h1: { fontWeight: 800, letterSpacing: "-0.04em" },
-    h2: { fontWeight: 800, letterSpacing: "-0.035em" },
-    h3: { fontWeight: 800, letterSpacing: "-0.03em" },
-    h4: { fontWeight: 750, letterSpacing: "-0.025em" },
-    h5: { fontWeight: 700, letterSpacing: "-0.02em" },
-    h6: { fontWeight: 700, letterSpacing: "-0.02em" },
+    h1: { fontWeight: 800, letterSpacing: 0 },
+    h2: { fontWeight: 800, letterSpacing: 0 },
+    h3: { fontWeight: 800, letterSpacing: 0 },
+    h4: { fontWeight: 750, letterSpacing: 0 },
+    h5: { fontWeight: 700, letterSpacing: 0 },
+    h6: { fontWeight: 700, letterSpacing: 0 },
     button: {
       textTransform: "none",
       fontWeight: 700,
@@ -181,6 +182,7 @@ const theme = createTheme({
       styleOverrides: {
         body: {
           backgroundColor: "#020816",
+          scrollbarGutter: "stable",
         },
       },
     },
@@ -188,21 +190,25 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: "none",
+          borderRadius: 10,
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 6,
           boxShadow: "none",
+          minHeight: 40,
+          paddingLeft: 14,
+          paddingRight: 14,
         },
       },
     },
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 6,
         },
       },
     },
@@ -214,7 +220,41 @@ const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 6,
+          backgroundColor: "rgba(255,255,255,0.03)",
+          transition: "border-color 160ms ease, background-color 160ms ease",
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgba(122, 146, 176, 0.28)",
+          },
+          "&.Mui-focused": {
+            boxShadow: "none",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "rgba(122, 146, 176, 0.32)",
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: "0.95rem",
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          "&.Mui-focused": {
+            color: "#8ca0b8",
+          },
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: "rgba(122, 146, 176, 0.22)",
         },
       },
     },
@@ -268,7 +308,6 @@ function App() {
     enabled: isAuthenticated,
   });
 
-  const homeView = route.kind === "app" && view === "home";
   const inboxView = route.kind === "app" && view === "inbox";
   const activeAuthMode = route.kind === "auth" ? route.mode : "login";
 
@@ -583,7 +622,7 @@ function App() {
               },
             }}
           >
-            <Box sx={{ p: 1, height: "100%" }}>
+            <Box sx={{ p: 1, height: "100%", minHeight: "100dvh" }}>
                 <AgentSidebar
                   isMobile
                   view={view}
@@ -608,11 +647,25 @@ function App() {
             minHeight: 0,
             position: "relative",
             zIndex: 1,
-            alignItems: homeView ? "flex-start" : "stretch",
+            alignItems: "stretch",
+            maxWidth: 1480,
+            width: "100%",
+            mx: "auto",
+            overflow: "hidden",
+            p: { xs: 1, md: 1.5 },
+            boxSizing: "border-box",
           }}
         >
           {!isCompact ? (
-            <Box sx={{ width: 284, flexShrink: 0, p: 1.5 }}>
+            <Box
+              sx={{
+                width: 284,
+                flexShrink: 0,
+                height: "100%",
+                minHeight: 0,
+                boxSizing: "border-box",
+              }}
+            >
               <AgentSidebar
                 isMobile={false}
                 view={view}
@@ -629,10 +682,10 @@ function App() {
               flex: 1,
               height: "100%",
               minWidth: 0,
-              p: { xs: 1, md: 1.5 },
-              pl: { xs: 1, md: 0 },
+              pl: { xs: 1, md: 1.5 },
               display: "flex",
               minHeight: 0,
+              boxSizing: "border-box",
             }}
           >
             <Paper
