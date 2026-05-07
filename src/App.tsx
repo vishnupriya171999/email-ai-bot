@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Box, CircularProgress, CssBaseline, Drawer, LinearProgress, Paper, ThemeProvider, Typography, createTheme, useMediaQuery } from "@mui/material";
+import { Alert, Box, CssBaseline, Drawer, LinearProgress, Paper, ThemeProvider, Typography, createTheme, useMediaQuery } from "@mui/material";
 import { AgentHeader, AgentSidebar, AnalyticsView, HomeView, InboxView, KnowledgeBaseView, ViewKey } from "./components/agent/AgentViews";
 import { AuthMode, AuthPage } from "./components/auth/AuthPage";
 import { FRONTEND_ROUTES } from "./config/locator";
