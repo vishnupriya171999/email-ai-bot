@@ -543,7 +543,7 @@ function App() {
               gap: 2,
             }}
           >
-            <CircularProgress size={26} />
+            {/* <CircularProgress size={26} /> */}
             <Box>
               <Typography variant="subtitle1" fontWeight={800}>
                 Restoring session
