@@ -1,8 +1,7 @@
 // Central place for app-wide constants and backend URLs.
 // Set REACT_APP_API_URL in your .env file to override the default.
 
-export const API_BASE_URL =
-  process.env.REACT_APP_API_URL?.replace(/\/$/, "") || "http://localhost:5000/api";
+export const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 export const FRONTEND_ROUTES = {
   LOGIN: "/login",
