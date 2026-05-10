@@ -816,7 +816,7 @@ function App() {
                     items={knowledgeBase}
                     loading={knowledgeLoading}
                     onAddItem={handleAddKnowledge}
-                    onDeleteItem={handleDeleteKnowledge}
+                    // onDeleteItem={handleDeleteKnowledge}
                     onSeedKnowledge={handleSeedKnowledge}
                     onSearchKnowledge={handleSearchKnowledge}
                   />
