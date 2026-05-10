@@ -1358,9 +1358,9 @@ export function KnowledgeBaseView({
                       Updated {formatDate(item.updatedAt)}
                     </Typography>
                   </Box>
-                  <IconButton onClick={() => void onDeleteItem(item.id)} aria-label={`Delete ${item.title}`}>
+                  {/* <IconButton onClick={() => void onDeleteItem(item.id)} aria-label={`Delete ${item.title}`}>
                     <DeleteOutlineRoundedIcon fontSize="small" />
-                  </IconButton>
+                  </IconButton> */}
                 </Stack>
               </Paper>
             ))
