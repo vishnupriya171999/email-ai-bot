@@ -1195,14 +1195,14 @@ export function KnowledgeBaseView({
   items,
   loading,
   onAddItem,
-  onDeleteItem,
+  // onDeleteItem,
   onSeedKnowledge,
   onSearchKnowledge,
 }: {
   items: KnowledgeSnippet[];
   loading: boolean;
   onAddItem: (item: Omit<KnowledgeSnippet, "id" | "updatedAt">) => Promise<void>;
-  onDeleteItem: (id: string) => Promise<void>;
+  // onDeleteItem: (id: string) => Promise<void>;
   onSeedKnowledge: () => Promise<void>;
   onSearchKnowledge: (query: string) => Promise<void>;
 }) {
